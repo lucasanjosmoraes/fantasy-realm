@@ -1,0 +1,17 @@
+{
+  "name": "fantasy-realm",
+  "version": "1.0.0",
+  "author": "Lucas Moraes",
+  "license": "ISC",
+  "scripts": {
+    "test": "jest --verbose --passWithNoTests ./tests/unit"
+  },
+  "dependencies": {
+    "sanctuary": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.7.2",
+    "eslint-plugin-functional": "^1.0.0",
+    "jest": "^24.9.0"
+  }
+}
