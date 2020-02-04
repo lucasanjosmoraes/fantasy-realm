@@ -2,6 +2,36 @@
 const Task = require('data.task');
 const { writeFile } = require('fs');
 
+class Either {
+  constructor(value) {
+    this.value = value;
+  }
+}
+
+class Left extends Either {
+  map() {
+    return this;
+  }
+}
+
+class Right extends Either {
+  map(f) {
+    return new Right(f(this.value));
+  }
+}
+
+const either = (errorAction) => (successAction) => (result) => {
+  if (result instanceof Left) {
+    return errorAction(result.value);
+  }
+
+  if (result instanceof Right) {
+    return successAction(result.value);
+  }
+
+  return new Left('');
+};
+
 const showInternalError = () => {
   console.log('Sorry, we couldn\'t create the file');
 };
@@ -100,19 +130,27 @@ const writePackage = (packageJSON) => new Task((rej, res) => (
   })
 ));
 
-npmInitApp.fork(showInternalError, ({
-  text: createResponse, previousData: packageAsString,
-}) => {
-  if (
-    [ 'yes', 'y' ].includes(createResponse.toLowerCase())
-    || createResponse === ''
-  ) {
-    writePackage(packageAsString).fork(showInternalError, () => {
-      console.log('File created, enjoy :p');
-
-      process.exit(0);
-    });
-  }
-
+const closeReadLine = () => {
   rl.close();
-});
+};
+
+const writePackageAndFinish = (packageData) => (
+  writePackage(packageData).fork(showInternalError, () => {
+    console.log('File created, enjoy :p');
+
+    process.exit(0);
+  })
+);
+
+const checkUserConfirmation = ({
+  text: createResponse, previousData: packageAsString,
+}) => (
+  [ 'yes', 'y' ].includes(createResponse.toLowerCase())
+        || createResponse === ''
+)
+  ? new Right(packageAsString)
+  : new Left('');
+
+npmInitApp.fork(showInternalError, (userConfirmation) => (
+  either(closeReadLine)(writePackageAndFinish)(checkUserConfirmation(userConfirmation))
+));
