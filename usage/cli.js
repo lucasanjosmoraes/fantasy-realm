@@ -2,23 +2,7 @@
 const Task = require('data.task');
 const { writeFile } = require('fs');
 
-class Either {
-  constructor(value) {
-    this.value = value;
-  }
-}
-
-class Left extends Either {
-  map() {
-    return this;
-  }
-}
-
-class Right extends Either {
-  map(f) {
-    return new Right(f(this.value));
-  }
-}
+const { Left, Right } = require('./utils');
 
 const either = (errorAction) => (successAction) => (result) => {
   if (result instanceof Left) {
